@@ -40,6 +40,7 @@ var (
 type Event struct {
 	Op       Op
 	Path     string
+	OldChecksum string
 	checksum string
 }
 
@@ -51,12 +52,15 @@ type Watcher struct {
 	fsWatcher *watcher.Watcher
 	notify    string
 	directory string
-	checksums map[string]string
+	// checksums map[string]string
+	Checksums map[string]string
 }
+
 
 // NewWatcher will create a new file change watching for a given directory defined
 // in an environment
 func NewWatcher(e *env.Env, configPath string, checksums map[string]string) (*Watcher, error) {
+	fmt.Printf("NewWatcher: %x", checksums)
 	fsWatcher := watcher.New()
 	fsWatcher.IgnoreHiddenFiles(true)
 	fsWatcher.FilterOps(watcher.Create, watcher.Write, watcher.Remove, watcher.Rename, watcher.Move)
@@ -74,7 +78,7 @@ func NewWatcher(e *env.Env, configPath string, checksums map[string]string) (*Wa
 	return &Watcher{
 		Events:    make(chan Event),
 		directory: e.Directory,
-		checksums: checksums,
+		Checksums: checksums,
 		notify:    e.Notify,
 		fsWatcher: fsWatcher,
 	}, nil
@@ -147,22 +151,22 @@ func (w *Watcher) onEvent(event watcher.Event) bool {
 
 func (w *Watcher) updateChecksum(e Event) {
 	if e.Op == Remove {
-		delete(w.checksums, e.Path)
+		delete(w.Checksums, e.Path)
 	} else if e.Op == Update {
-		w.checksums[e.Path] = e.checksum
+		w.Checksums[e.Path] = e.checksum
 	}
 }
 
 func (w *Watcher) translateEvent(event watcher.Event) []Event {
 	oldPath, currentPath := w.parsePath(event.Path)
 	if isEventType(event.Op, watcher.Rename, watcher.Move) {
-		return []Event{{Op: Remove, Path: oldPath}, {Op: Update, Path: currentPath}}
+		return []Event{{Op: Remove, Path: oldPath}, {Op: Update, Path: currentPath, OldChecksum: w.Checksums[currentPath]}}
 	} else if isEventType(event.Op, watcher.Remove) {
 		return []Event{{Op: Remove, Path: currentPath}}
 	} else if isEventType(event.Op, watcher.Create, watcher.Write) {
 		checksum, err := fileChecksum(w.directory, currentPath)
 		eventOp := Update
-		if err == nil && checksum == w.checksums[currentPath] {
+		if err == nil && checksum == w.Checksums[currentPath] {
 			eventOp = Skip
 		}
 		return []Event{{Op: eventOp, Path: currentPath, checksum: checksum}}

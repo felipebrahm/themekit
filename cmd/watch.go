@@ -113,7 +113,8 @@ func perform(ctx *cmdutil.Ctx, path string, op file.Op) {
 			return
 		}
 
-		if err := ctx.Client.UpdateAsset(asset); err != nil {
+		mysum := watcher.checksums[path]
+		if err := ctx.Client.UpdateAsset(asset, mysum); err != nil {
 			ctx.Err("[%s] (%s) %s", colors.Green(ctx.Env.Name), colors.Blue(asset.Key), err)
 		} else if ctx.Flags.Verbose {
 			ctx.Log.Printf("[%s] Updated %s", colors.Green(ctx.Env.Name), colors.Blue(asset.Key))
