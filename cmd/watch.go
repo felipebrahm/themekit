@@ -52,12 +52,12 @@ var watchCmd = &cobra.Command{
 			defer watcher.Stop()
 			signalChan := make(chan os.Signal)
 			signal.Notify(signalChan, os.Interrupt)
-			return watch(ctx, watcher.Events, signalChan)
+			return watch(ctx, watcher.Events, signalChan, checksums)
 		})
 	},
 }
 
-func watch(ctx *cmdutil.Ctx, events chan file.Event, sig chan os.Signal) error {
+func watch(ctx *cmdutil.Ctx, events chan file.Event, sig chan os.Signal, checksums map[string]string) error {
 	ctx.Flags.Verbose = true
 	ctx.Log.SetFlags(log.Ltime)
 
@@ -79,18 +79,19 @@ func watch(ctx *cmdutil.Ctx, events chan file.Event, sig chan os.Signal) error {
 				return cmdutil.ErrReload
 			}
 			ctx.Log.Printf("[%s] processing %s", colors.Green(ctx.Env.Name), colors.Blue(event.Path))
-			perform(ctx, event.Path, event.Op)
+			perform(ctx, event.Path, event.Op, checksums)
 		case <-sig:
 			return nil
 		}
 	}
 }
 
-func perform(ctx *cmdutil.Ctx, path string, op file.Op) {
+func perform(ctx *cmdutil.Ctx, path string, op file.Op, checksums map[string]string) {
 	defer ctx.DoneTask()
 
 	switch op {
 	case file.Skip:
+		println("95")
 		localAsset, _ := shopify.ReadAsset(ctx.Env, path)
 
 		if ctx.Flags.Verbose {
@@ -113,7 +114,8 @@ func perform(ctx *cmdutil.Ctx, path string, op file.Op) {
 			return
 		}
 
-		mysum := watcher.checksums[path]
+		println("95c,", checksums[path])
+		mysum := checksums[path]
 		if err := ctx.Client.UpdateAsset(asset, mysum); err != nil {
 			ctx.Err("[%s] (%s) %s", colors.Green(ctx.Env.Name), colors.Blue(asset.Key), err)
 		} else if ctx.Flags.Verbose {

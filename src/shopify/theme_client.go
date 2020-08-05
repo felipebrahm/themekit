@@ -287,8 +287,10 @@ func (c Client) CreateAsset(asset Asset) error {
 // If there was an error, in the request then error will be defined otherwise the
 //response will have the appropropriate data for usage.
 func (c Client) UpdateAsset(asset Asset, oldChecksum string) error {
-	var my = map[string]string(nil)
-	my["X-Shopify-Previous-Checksum"] = oldChecksum
+	var my = make(map[string]string) // (nil)
+	// if oldChecksum!= "" {
+  	my["X-Shopify-Previous-Checksum"] = oldChecksum
+  // }
 	resp, err := c.http.Put(c.assetPath(map[string]string{}), map[string]Asset{"asset": asset}, my)
 	if err != nil {
 		return err

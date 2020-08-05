@@ -70,17 +70,18 @@ func deploy(ctx *cmdutil.Ctx) error {
 		}
 	}()
 
+	emptyChecksums := make(map[string]string) // (nil)
 	var deployGroup sync.WaitGroup
 	ctx.StartProgress(len(assetsActions))
 	for path, op := range assetsActions {
 		if path == settingsDataKey {
-			defer perform(ctx, path, op)
+			defer perform(ctx, path, op, emptyChecksums)
 			continue
 		}
 		deployGroup.Add(1)
 		go func(path string, op file.Op) {
 			defer deployGroup.Done()
-			perform(ctx, path, op)
+			perform(ctx, path, op, emptyChecksums)
 		}(path, op)
 
 		switch op {
