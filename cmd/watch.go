@@ -52,12 +52,12 @@ var watchCmd = &cobra.Command{
 			defer watcher.Stop()
 			signalChan := make(chan os.Signal)
 			signal.Notify(signalChan, os.Interrupt)
-			return watch(ctx, watcher.Events, signalChan, checksums)
+			return watch(ctx, watcher.Events, signalChan)
 		})
 	},
 }
 
-func watch(ctx *cmdutil.Ctx, events chan file.Event, sig chan os.Signal, checksums map[string]string) error {
+func watch(ctx *cmdutil.Ctx, events chan file.Event, sig chan os.Signal) error {
 	ctx.Flags.Verbose = true
 	ctx.Log.SetFlags(log.Ltime)
 
@@ -79,14 +79,14 @@ func watch(ctx *cmdutil.Ctx, events chan file.Event, sig chan os.Signal, checksu
 				return cmdutil.ErrReload
 			}
 			ctx.Log.Printf("[%s] processing %s", colors.Green(ctx.Env.Name), colors.Blue(event.Path))
-			perform(ctx, event.Path, event.Op, checksums)
+			perform(ctx, event.Path, event.Op, event.PreviousChecksum)
 		case <-sig:
 			return nil
 		}
 	}
 }
 
-func perform(ctx *cmdutil.Ctx, path string, op file.Op, checksums map[string]string) {
+func perform(ctx *cmdutil.Ctx, path string, op file.Op, checksum string) {
 	defer ctx.DoneTask()
 
 	switch op {
@@ -113,7 +113,7 @@ func perform(ctx *cmdutil.Ctx, path string, op file.Op, checksums map[string]str
 			return
 		}
 
-		if err := ctx.Client.UpdateWatchedAsset(asset, checksums[path]); err != nil {
+		if err := ctx.Client.UpdateAsset(asset, checksum); err != nil {
 			ctx.Err("[%s] (%s) %s", colors.Green(ctx.Env.Name), colors.Blue(asset.Key), err)
 		} else if ctx.Flags.Verbose {
 			ctx.Log.Printf("[%s] Updated %s", colors.Green(ctx.Env.Name), colors.Blue(asset.Key))

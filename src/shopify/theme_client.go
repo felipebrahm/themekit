@@ -280,14 +280,18 @@ func (c Client) GetAsset(filename string) (Asset, error) {
 // If there was an error, in the request then error will be defined otherwise the
 //response will have the appropropriate data for usage.
 func (c Client) CreateAsset(asset Asset) error {
-	return c.UpdateAsset(asset)
+	return c.UpdateAsset(asset, "")
 }
 
 // UpdateAsset will take an asset and will return when the asset has been updated.
 // If there was an error, in the request then error will be defined otherwise the
 //response will have the appropropriate data for usage.
-func (c Client) UpdateAsset(asset Asset) error {
-	resp, err := c.http.Put(c.assetPath(map[string]string{}), map[string]Asset{"asset": asset}, nil)
+func (c Client) UpdateAsset(asset Asset, prevChecksum string) error {
+	var header = make(map[string]string)
+	if prevChecksum != "" {
+		header["X-Shopify-Previous-Checksum"] = prevChecksum
+	}
+	resp, err := c.http.Put(c.assetPath(map[string]string{}), map[string]Asset{"asset": asset}, header)
 	if err != nil {
 		return err
 	} else if resp.StatusCode == 404 {
@@ -304,42 +308,7 @@ func (c Client) UpdateAsset(asset Asset) error {
 			if resp.StatusCode == 422 && strings.Contains(r.Errors["asset"][0], "Cannot overwrite generated asset") {
 				// No need to check the error because if it fails then remove will be tried again.
 				c.DeleteAsset(Asset{Key: asset.Key + ".liquid"})
-				return c.UpdateAsset(asset)
-			}
-			return errors.New(toSentence(r.Errors["asset"]))
-		}
-		return errors.New(toSentence(toMessages(r.Errors)))
-	}
-
-	return nil
-}
-
-// UpdateWatchedAsset will take an asset and will return when the asset has been updated.
-// If there was an error, in the request then error will be defined otherwise the
-//response will have the appropropriate data for usage.
-func (c Client) UpdateWatchedAsset(asset Asset, oldChecksum string) error {
-	var my = make(map[string]string) // (nil)
-	// if oldChecksum!= "" {
-  	my["X-Shopify-Previous-Checksum"] = oldChecksum
-  // }
-	resp, err := c.http.Put(c.assetPath(map[string]string{}), map[string]Asset{"asset": asset}, my)
-	if err != nil {
-		return err
-	} else if resp.StatusCode == 404 {
-		return ErrNotPartOfTheme
-	}
-
-	var r assetResponse
-	if err := unmarshalResponse(resp.Body, &r); err != nil {
-		return err
-	}
-
-	if len(r.Errors) > 0 {
-		if _, ok := r.Errors["asset"]; ok {
-			if resp.StatusCode == 422 && strings.Contains(r.Errors["asset"][0], "Cannot overwrite generated asset") {
-				// No need to check the error because if it fails then remove will be tried again.
-				c.DeleteAsset(Asset{Key: asset.Key + ".liquid"})
-				return c.UpdateAsset(asset)
+				return c.UpdateAsset(asset, prevChecksum)
 			}
 			return errors.New(toSentence(r.Errors["asset"]))
 		}

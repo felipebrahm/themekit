@@ -38,10 +38,10 @@ var (
 
 // Event decsribes a file change event
 type Event struct {
-	Op       Op
-	Path     string
-	OldChecksum string
-	checksum string
+	Op               Op
+	Path             string
+	PreviousChecksum string
+	checksum         string
 }
 
 // Watcher is the object used to watch files for change and notify on any events,
@@ -52,9 +52,8 @@ type Watcher struct {
 	fsWatcher *watcher.Watcher
 	notify    string
 	directory string
-	Checksums map[string]string
+	checksums map[string]string
 }
-
 
 // NewWatcher will create a new file change watching for a given directory defined
 // in an environment
@@ -76,7 +75,7 @@ func NewWatcher(e *env.Env, configPath string, checksums map[string]string) (*Wa
 	return &Watcher{
 		Events:    make(chan Event),
 		directory: e.Directory,
-		Checksums: checksums,
+		checksums: checksums,
 		notify:    e.Notify,
 		fsWatcher: fsWatcher,
 	}, nil
@@ -149,10 +148,10 @@ func (w *Watcher) onEvent(event watcher.Event) bool {
 
 func (w *Watcher) updateChecksum(e Event) {
 	if e.Op == Remove {
-		delete(w.Checksums, e.Path)
+		delete(w.checksums, e.Path)
 	} else if e.Op == Update {
-		if w.Checksums[e.Path] == "" {
-			w.Checksums[e.Path] = e.checksum
+		if w.checksums[e.Path] == "" {
+			w.checksums[e.Path] = e.checksum
 		}
 	}
 }
@@ -160,16 +159,16 @@ func (w *Watcher) updateChecksum(e Event) {
 func (w *Watcher) translateEvent(event watcher.Event) []Event {
 	oldPath, currentPath := w.parsePath(event.Path)
 	if isEventType(event.Op, watcher.Rename, watcher.Move) {
-		return []Event{{Op: Remove, Path: oldPath}, {Op: Update, Path: currentPath, OldChecksum: w.Checksums[currentPath]}}
+		return []Event{{Op: Remove, Path: oldPath}, {Op: Update, Path: currentPath, PreviousChecksum: w.checksums[currentPath]}}
 	} else if isEventType(event.Op, watcher.Remove) {
 		return []Event{{Op: Remove, Path: currentPath}}
 	} else if isEventType(event.Op, watcher.Create, watcher.Write) {
 		checksum, err := fileChecksum(w.directory, currentPath)
 		eventOp := Update
-		if err == nil && checksum == w.Checksums[currentPath] {
+		if err == nil && checksum == w.checksums[currentPath] {
 			eventOp = Skip
 		}
-		return []Event{{Op: eventOp, Path: currentPath, checksum: checksum}}
+		return []Event{{Op: eventOp, Path: currentPath, checksum: checksum, PreviousChecksum: w.checksums[currentPath]}}
 	}
 	return []Event{}
 }
