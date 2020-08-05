@@ -70,7 +70,6 @@ func deploy(ctx *cmdutil.Ctx) error {
 		}
 	}()
 
-	// emptyChecksums := make(map[string]string) // (nil)
 	var deployGroup sync.WaitGroup
 	ctx.StartProgress(len(assetsActions))
 	for path, op := range assetsActions {

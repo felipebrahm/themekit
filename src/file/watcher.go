@@ -52,7 +52,6 @@ type Watcher struct {
 	fsWatcher *watcher.Watcher
 	notify    string
 	directory string
-	// checksums map[string]string
 	Checksums map[string]string
 }
 
@@ -60,7 +59,6 @@ type Watcher struct {
 // NewWatcher will create a new file change watching for a given directory defined
 // in an environment
 func NewWatcher(e *env.Env, configPath string, checksums map[string]string) (*Watcher, error) {
-	fmt.Printf("NewWatcher: %x", checksums)
 	fsWatcher := watcher.New()
 	fsWatcher.IgnoreHiddenFiles(true)
 	fsWatcher.FilterOps(watcher.Create, watcher.Write, watcher.Remove, watcher.Rename, watcher.Move)
