@@ -154,7 +154,6 @@ func (w *Watcher) updateChecksum(e Event) {
 		delete(w.Checksums, e.Path)
 	} else if e.Op == Update {
 		if w.Checksums[e.Path] == "" {
-			println("159 updatechecksum")
 			w.Checksums[e.Path] = e.checksum
 		}
 	}

@@ -13,7 +13,8 @@ type shopifyClient interface {
 	Themes() ([]shopify.Theme, error)
 	GetAllAssets() ([]shopify.Asset, error)
 	GetAsset(string) (shopify.Asset, error)
-	UpdateAsset(shopify.Asset, string) error
+	UpdateAsset(shopify.Asset) error
+	UpdateWatchedAsset(shopify.Asset, string) error
 	DeleteAsset(shopify.Asset) error
 }
 

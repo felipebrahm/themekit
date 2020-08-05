@@ -40,8 +40,7 @@ func remove(ctx *cmdutil.Ctx, removeFile func(string) error) error {
 		removeGroup.Add(1)
 		go func(filename string) {
 			defer removeGroup.Done()
-			emptyChecksums := make(map[string]string) // (nil)
-			perform(ctx, filename, file.Remove, emptyChecksums)
+			perform(ctx, filename, file.Remove, nil)
 			removeFile(filepath.Join(ctx.Env.Directory, filename))
 		}(filename)
 	}

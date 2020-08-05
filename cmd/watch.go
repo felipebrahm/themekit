@@ -91,7 +91,6 @@ func perform(ctx *cmdutil.Ctx, path string, op file.Op, checksums map[string]str
 
 	switch op {
 	case file.Skip:
-		println("95")
 		localAsset, _ := shopify.ReadAsset(ctx.Env, path)
 
 		if ctx.Flags.Verbose {
@@ -114,9 +113,7 @@ func perform(ctx *cmdutil.Ctx, path string, op file.Op, checksums map[string]str
 			return
 		}
 
-		println("95c,", checksums[path])
-		mysum := checksums[path]
-		if err := ctx.Client.UpdateAsset(asset, mysum); err != nil {
+		if err := ctx.Client.UpdateWatchedAsset(asset, checksums[path]); err != nil {
 			ctx.Err("[%s] (%s) %s", colors.Green(ctx.Env.Name), colors.Blue(asset.Key), err)
 		} else if ctx.Flags.Verbose {
 			ctx.Log.Printf("[%s] Updated %s", colors.Green(ctx.Env.Name), colors.Blue(asset.Key))
