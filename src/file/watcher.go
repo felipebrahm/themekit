@@ -38,10 +38,10 @@ var (
 
 // Event decsribes a file change event
 type Event struct {
-	Op               Op
-	Path             string
+	Op                Op
+	Path              string
 	LastKnownChecksum string
-	checksum         string
+	checksum          string
 }
 
 // Watcher is the object used to watch files for change and notify on any events,
