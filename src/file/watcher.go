@@ -40,7 +40,7 @@ var (
 type Event struct {
 	Op               Op
 	Path             string
-	PreviousChecksum string
+	LastKnownChecksum string
 	checksum         string
 }
 
@@ -157,7 +157,7 @@ func (w *Watcher) updateChecksum(e Event) {
 func (w *Watcher) translateEvent(event watcher.Event) []Event {
 	oldPath, currentPath := w.parsePath(event.Path)
 	if isEventType(event.Op, watcher.Rename, watcher.Move) {
-		return []Event{{Op: Remove, Path: oldPath}, {Op: Update, Path: currentPath, PreviousChecksum: w.checksums[currentPath]}}
+		return []Event{{Op: Remove, Path: oldPath}, {Op: Update, Path: currentPath, LastKnownChecksum: w.checksums[currentPath]}}
 	} else if isEventType(event.Op, watcher.Remove) {
 		return []Event{{Op: Remove, Path: currentPath}}
 	} else if isEventType(event.Op, watcher.Create, watcher.Write) {
@@ -166,7 +166,7 @@ func (w *Watcher) translateEvent(event watcher.Event) []Event {
 		if err == nil && checksum == w.checksums[currentPath] {
 			eventOp = Skip
 		}
-		return []Event{{Op: eventOp, Path: currentPath, checksum: checksum, PreviousChecksum: w.checksums[currentPath]}}
+		return []Event{{Op: eventOp, Path: currentPath, checksum: checksum, LastKnownChecksum: w.checksums[currentPath]}}
 	}
 	return []Event{}
 }

@@ -79,7 +79,7 @@ func watch(ctx *cmdutil.Ctx, events chan file.Event, sig chan os.Signal) error {
 				return cmdutil.ErrReload
 			}
 			ctx.Log.Printf("[%s] processing %s", colors.Green(ctx.Env.Name), colors.Blue(event.Path))
-			perform(ctx, event.Path, event.Op, event.PreviousChecksum)
+			perform(ctx, event.Path, event.Op, event.LastKnownChecksum)
 		case <-sig:
 			return nil
 		}
