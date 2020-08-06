@@ -150,9 +150,7 @@ func (w *Watcher) updateChecksum(e Event) {
 	if e.Op == Remove {
 		delete(w.checksums, e.Path)
 	} else if e.Op == Update {
-		if w.checksums[e.Path] == "" {
-			w.checksums[e.Path] = e.checksum
-		}
+		w.checksums[e.Path] = e.checksum
 	}
 }
 
