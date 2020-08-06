@@ -286,10 +286,10 @@ func (c Client) CreateAsset(asset Asset) error {
 // UpdateAsset will take an asset and will return when the asset has been updated.
 // If there was an error, in the request then error will be defined otherwise the
 // response will have the appropriate data for usage.
-func (c Client) UpdateAsset(asset Asset, prevChecksum string) error {
+func (c Client) UpdateAsset(asset Asset, lastKnownChecksum string) error {
 	var header = make(map[string]string)
-	if prevChecksum != "" {
-		header["X-Shopify-Last-Known-Checksum"] = prevChecksum
+	if lastKnownChecksum != "" {
+		header["X-Shopify-Last-Known-Checksum"] = lastKnownChecksum
 	}
 	resp, err := c.http.Put(c.assetPath(map[string]string{}), map[string]Asset{"asset": asset}, header)
 	if err != nil {
@@ -308,7 +308,7 @@ func (c Client) UpdateAsset(asset Asset, prevChecksum string) error {
 			if resp.StatusCode == 422 && strings.Contains(r.Errors["asset"][0], "Cannot overwrite generated asset") {
 				// No need to check the error because if it fails then remove will be tried again.
 				c.DeleteAsset(Asset{Key: asset.Key + ".liquid"})
-				return c.UpdateAsset(asset, prevChecksum)
+				return c.UpdateAsset(asset, lastKnownChecksum)
 			}
 			return errors.New(toSentence(r.Errors["asset"]))
 		}
