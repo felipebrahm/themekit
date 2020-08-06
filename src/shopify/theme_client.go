@@ -289,7 +289,7 @@ func (c Client) CreateAsset(asset Asset) error {
 func (c Client) UpdateAsset(asset Asset, prevChecksum string) error {
 	var header = make(map[string]string)
 	if prevChecksum != "" {
-		header["X-Shopify-Previous-Checksum"] = prevChecksum
+		header["X-Shopify-Last-Known-Checksum"] = prevChecksum
 	}
 	resp, err := c.http.Put(c.assetPath(map[string]string{}), map[string]Asset{"asset": asset}, header)
 	if err != nil {
