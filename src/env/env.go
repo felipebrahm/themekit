@@ -13,17 +13,18 @@ import (
 
 // Env is the structure of a configuration for an environment.
 type Env struct {
-	Name         string        `yaml:"-" json:"-" env:"-"`
-	Password     string        `yaml:"password,omitempty" json:"password,omitempty" env:"THEMEKIT_PASSWORD"`
-	ThemeID      string        `yaml:"theme_id,omitempty" json:"theme_id,omitempty" env:"THEMEKIT_THEME_ID"`
-	Domain       string        `yaml:"store" json:"store" env:"THEMEKIT_STORE"`
-	Directory    string        `yaml:"directory,omitempty" json:"directory,omitempty" env:"THEMEKIT_DIRECTORY"`
-	IgnoredFiles []string      `yaml:"ignore_files,omitempty" json:"ignore_files,omitempty" env:"THEMEKIT_IGNORE_FILES" envSeparator:":"`
-	Proxy        string        `yaml:"proxy,omitempty" json:"proxy,omitempty" env:"THEMEKIT_PROXY"`
-	Ignores      []string      `yaml:"ignores,omitempty" json:"ignores,omitempty" env:"THEMEKIT_IGNORES" envSeparator:":"`
-	Timeout      time.Duration `yaml:"timeout,omitempty" json:"timeout,omitempty" env:"THEMEKIT_TIMEOUT"`
-	ReadOnly     bool          `yaml:"readonly,omitempty" json:"readonly,omitempty" env:"-"`
-	Notify       string        `yaml:"notify,omitempty" json:"notify,omitempty" env:"THEMEKIT_NOTIFY"`
+	Name          string        `yaml:"-" json:"-" env:"-"`
+	Password      string        `yaml:"password,omitempty" json:"password,omitempty" env:"THEMEKIT_PASSWORD"`
+	ThemeID       string        `yaml:"theme_id,omitempty" json:"theme_id,omitempty" env:"THEMEKIT_THEME_ID"`
+	Domain        string        `yaml:"store" json:"store" env:"THEMEKIT_STORE"`
+	Directory     string        `yaml:"directory,omitempty" json:"directory,omitempty" env:"THEMEKIT_DIRECTORY"`
+	IgnoredFiles  []string      `yaml:"ignore_files,omitempty" json:"ignore_files,omitempty" env:"THEMEKIT_IGNORE_FILES" envSeparator:":"`
+	Proxy         string        `yaml:"proxy,omitempty" json:"proxy,omitempty" env:"THEMEKIT_PROXY"`
+	Ignores       []string      `yaml:"ignores,omitempty" json:"ignores,omitempty" env:"THEMEKIT_IGNORES" envSeparator:":"`
+	Timeout       time.Duration `yaml:"timeout,omitempty" json:"timeout,omitempty" env:"THEMEKIT_TIMEOUT"`
+	ReadOnly      bool          `yaml:"readonly,omitempty" json:"readonly,omitempty" env:"-"`
+	Notify        string        `yaml:"notify,omitempty" json:"notify,omitempty" env:"THEMEKIT_NOTIFY"`
+	NotifyWebhook string        `yaml:"notify_webhook,omitempty" json:"notify_webhook,omitempty" env:"THEMEKIT_NOTIFY_WEBHOOK"`
 }
 
 //Default is the default values for a environment

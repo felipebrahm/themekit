@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"bytes"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 
@@ -117,6 +119,22 @@ func perform(ctx *cmdutil.Ctx, path string, op file.Op) {
 			ctx.Err("[%s] (%s) %s", colors.Green(ctx.Env.Name), colors.Blue(asset.Key), err)
 		} else if ctx.Flags.Verbose {
 			ctx.Log.Printf("[%s] Updated %s", colors.Green(ctx.Env.Name), colors.Blue(asset.Key))
+			if ctx.Flags.NotifyWebhook != "" {
+				notifyWebhook(ctx, asset.Key)
+			}
 		}
 	}
+}
+
+func notifyWebhook(ctx *cmdutil.Ctx, assetKey string) {
+	var jsonStr = []byte(fmt.Sprintf(`{"files":["%s"]}`, assetKey))
+	req, err := http.NewRequest("POST", ctx.Flags.NotifyWebhook, bytes.NewBuffer(jsonStr))
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		ctx.Log.Printf(`[%s] Error while notifying webhook "%s": %s`, colors.Green(ctx.Env.Name), colors.Blue(ctx.Env.NotifyWebhook), err)
+	}
+	defer resp.Body.Close()
 }
