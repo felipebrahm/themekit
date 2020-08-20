@@ -131,6 +131,8 @@ func notifyWebhook(ctx *cmdutil.Ctx, assetKey string) {
 	req, err := http.NewRequest("POST", ctx.Flags.NotifyWebhook, bytes.NewBuffer(jsonStr))
 	req.Header.Set("Content-Type", "application/json")
 
+	ctx.Log.Printf("[%s] Notifying webhook %s", colors.Green(ctx.Env.Name), colors.Blue(ctx.Flags.NotifyWebhook))
+
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
